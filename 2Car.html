@@ -1,0 +1,118 @@
+<html>
+<canvas id="gameCanvas" width="400" height="600"> 
+<script>
+
+var canvas;
+var canvasContext;
+
+var FPS = 60;
+
+var rectX = [30,120];
+var rectY = -30;
+
+var cirX = [45,135];
+var cirY = -15;
+
+var objs1 = [];
+var objs2 = [];
+
+var time = 0;
+
+window.onload = function(){
+	canvas = document.getElementById('gameCanvas');
+	canvasContext = canvas.getContext('2d');
+	setInterval(function(){
+		if(time == 0){
+			var i = Math.floor((Math.random() * 100) + 1);
+			if(i%2==0){
+				var obj = new square(rectX[(i/2)%2],rectY);
+			}else{
+				var obj = new circle(cirX[((i-1)/2)%2],cirY);
+			}
+			objs1.push(obj);
+			i = Math.floor((Math.random() * 100) + 1);
+			if(i%2==0){
+				var obj = new square(rectX[(i/2)%2],rectY);
+			}else{
+				var obj = new circle(cirX[((i-1)/2)%2],cirY);
+			}
+			objs2.push(obj);
+		}
+		drawEverything();
+		time ++;
+		if(time == 150){
+			time = 0;
+		}
+	},1000/FPS);
+}
+
+function circle(x,y){
+	this. x = x;
+	this. y = y;
+	this.str = "circle";
+}
+
+function square(x,y){
+	this.x = x;
+	this.y = y;
+	this.str = "square";
+}
+
+function drawEverything(){
+	drawBackground();
+	drawObject();
+}
+
+function drawBackground(){
+	drawRect(0,0,canvas.width,canvas.height,'black');
+	drawRect(canvas.width/2-1,0,2,canvas.height,'white');
+}
+
+function drawRect(X,Y,width,height,color){
+	canvasContext.fillStyle = color;
+	canvasContext.fillRect(X,Y,width,height);
+}
+
+function drawCircle(X,Y,radius,color){
+	canvasContext.fillStyle = color;
+	canvasContext.beginPath();
+	canvasContext.arc(X, Y, radius, 0, Math.PI*2,true);
+	//canvasContext.arc(ballX, 100, 10, Math.PI, Math.PI*2,true);
+	canvasContext.fill();
+}
+
+function drawObject(){
+	for(var i = 0; i < objs1.length; i++){
+		if(objs1[i].str == "square"){
+			drawRect(objs1[i].x,objs1[i].y,30,30,'red');
+			objs1[i].y++;
+			if(objs1[i].y >= canvas.height){
+				objs1.shift();
+			}
+		}else{
+			drawCircle(objs1[i].x,objs1[i].y,15,'blue');
+			objs1[i].y++;
+			if(objs1[i].y -15 >= canvas.height){
+				objs1.shift();
+			}
+		}
+	}
+	for(var i = 0; i < objs2.length; i++){
+		if(objs2[i].str == "square"){
+			drawRect(objs2[i].x + 210,objs2[i].y,30,30,'red');
+			objs2[i].y++;
+			if(objs2[i].y >= canvas.height){
+				objs2.shift();
+			}
+		}else{
+			drawCircle(objs2[i].x + 210,objs2[i].y,15,'blue');
+			objs2[i].y++;
+			if(objs2[i].y -15 >= canvas.height){
+				objs2.shift();
+			}
+		}
+	}
+}
+
+</script>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		
+	</head>
+
+	<body>
+		<p onmouseup = "mouseUp()" onmousedown = "mouseDown()" > Click here! </p>
+		<br><p id = "change" >You're see the change</p>
+		<script>
+			function mouseUp() {
+				document.getElementById("change").style.color = "red";
+			}
+			function mouseDown(){
+				document.getElementById("change").style.color = "blue";
+			}
+		</script>
+	</body>
+</html>
