@@ -1,0 +1,345 @@
+<html>
+<canvas id="gameCanvas" width="800" height="600"></canvas>
+
+<script>
+var canvas;
+var canvasContext;
+
+var framePerSecond = 60;
+
+var player1X = 50;
+var player1Y = 300;
+var player1SpeedX = 0;
+var player1SpeedY = 0;
+var player1Score = 0;
+
+var player2X = 750;
+var player2Y = 300;
+var player2SpeedX = 0;
+var player2Speedy = 0;
+var player2Score = 0;
+
+var ballX = 300;
+var ballY = 300;
+var ballSpeedX = 0;
+var ballSpeedY = 0;
+
+var temp1X = 0;
+var temp1Y = 0;
+
+var flag = 0;
+
+var isCollisionWithBall = false;
+
+var time = 0;
+
+const PLAYERS_RADIUS = 30;
+
+const BALL_RADIUS = 10;
+
+const BOUND_THICKNESS = 10;
+
+function caculateMousePos(evt){  //evt: event
+	var rect = canvas.getBoundingClientRect();
+	var root = document.documentElement;
+	var mouseX = evt.clientX - rect.left - root.scrollLeft;
+	var mouseY = evt.clientY - rect.top - root.scrollTop;
+	return {
+		x:mouseX,
+		y:mouseY
+	};
+}
+
+window.onload = function(){
+	canvas = document.getElementById('gameCanvas');
+	canvasContext = canvas.getContext('2d');
+	setInterval(function(){
+			calculateSpeed(temp1X,temp1Y);
+			moveEverything();
+			drawEverything();
+			if(time == 0){
+				temp1X = player1X;
+				temp1Y = player1Y;
+			}
+			time++;
+			if(time == 20 ){
+				time = 0;
+			}
+			ballSpeed();
+	},1000/framePerSecond);
+	
+	canvas.addEventListener('mousemove',
+		function(evt){
+			var mousePos = caculateMousePos(evt);
+			playerCollisionWithBound(mousePos.x,mousePos.y);
+		});
+}
+
+function playerCollisionWithBound(X, Y){
+	if(X > canvas.width/2){
+		player1X = canvas.width/2;
+	}
+	else if(X-PLAYERS_RADIUS <= BOUND_THICKNESS+2 && Y - PLAYERS_RADIUS >= BOUND_THICKNESS + 2){
+		player1X = BOUND_THICKNESS+2+PLAYERS_RADIUS;
+	}
+	else if(X-PLAYERS_RADIUS <= BOUND_THICKNESS+2 && Y <= canvas.height/2-(PLAYERS_RADIUS+20)){
+		player1X = BOUND_THICKNESS+2+PLAYERS_RADIUS;
+	}
+	else if(X-PLAYERS_RADIUS <= BOUND_THICKNESS+2 && Y >= canvas.height/2+(PLAYERS_RADIUS+20)){
+		player1X = BOUND_THICKNESS+2+PLAYERS_RADIUS;
+	}
+	else if(X-PLAYERS_RADIUS <= BOUND_THICKNESS+2 && Y + PLAYERS_RADIUS <= canvas.height - BOUND_THICKNESS - 2){
+		player1X = BOUND_THICKNESS+2+PLAYERS_RADIUS;
+	}
+	else {
+		player1X = X;
+	}
+	if(Y - PLAYERS_RADIUS <= BOUND_THICKNESS+2 ){
+		player1Y = BOUND_THICKNESS + 2 + PLAYERS_RADIUS;
+	}
+	else if(Y + PLAYERS_RADIUS >= canvas.height - BOUND_THICKNESS - 2){
+		player1Y = canvas.height - BOUND_THICKNESS - 2 - PLAYERS_RADIUS;
+	}
+	else{
+		player1Y = Y;
+	}
+}
+
+function playerCollisionWithBall(dist){
+	if(dist <= PLAYERS_RADIUS + BALL_RADIUS + 2 ){
+		isCollisionWithBall = true;
+	}
+}
+
+function ballSpeed(){
+	ballSpeedX = ballSpeedX * 0.999;
+	ballSpeedY = ballSpeedY * 0.999;
+	if(ballSpeedX > 12){
+		ballSpeedX = 12;
+	}
+	if(ballSpeedY > 12){
+		ballSpeedY = 12;
+	}
+	if(ballSpeedX < -12){
+		ballSpeedX = -12;
+	}
+	if(ballSpeedY < -12){
+		ballSpeedY = -12;
+	}
+}
+
+function calculateSpeed(X,Y){
+	var distance = Math.sqrt((player1X - ballX)*(player1X - ballX) + (player1Y - ballY)*(player1Y - ballY));
+	if(distance > BALL_RADIUS + PLAYERS_RADIUS + 50 ){
+		flag = 1 ;
+	}
+	playerCollisionWithBall(distance);
+	if(isCollisionWithBall){
+		player1SpeedX = (player1X - X)*framePerSecond/(1000*2);
+		player1SpeedY = (player1Y - Y)*framePerSecond/(1000*2);
+		var X1 = player1X + 3*(ballX - player1X)/4;
+		var Y1 = player1Y + 3*(ballY - player1Y)/4;
+		var X2 = ballX + (player1X - ballX)/4;
+		var Y2 = ballY + (player1Y - ballY)/4;
+		time = 0;
+		if(flag == 1){
+			if(ballSpeedX!=0 && ballSpeedY!=0 && ballSpeedX != ballSpeedY && ballSpeedX != -ballSpeedY){
+				flag = 0;
+			
+				if(ballSpeedX < 0 && ballSpeedY > 0 && X1 > player1X + PLAYERS_RADIUS/1.42){
+					ballSpeedX = - ballSpeedX;
+				}
+				else if(ballSpeedX < 0 && ballSpeedY > 0 && Y1 < player1Y - PLAYERS_RADIUS/1.42){
+					ballSpeedY = - ballSpeedY;
+				}
+				
+				
+				else if(ballSpeedX > 0 && ballSpeedY < 0 && X2 < player1X - PLAYERS_RADIUS/1.42){
+					ballSpeedX = - ballSpeedX;
+				}
+				else if(ballSpeedX > 0 && ballSpeedY < 0 && Y2 > player1Y + PLAYERS_RADIUS/1.42){
+					ballSpeedY = - ballSpeedY;
+				}
+				
+				
+				else if(ballSpeedX > 0 && ballSpeedY > 0 && X2 < player1X - PLAYERS_RADIUS/1.42){
+					ballSpeedX = - ballSpeedX;
+				}
+				else if(ballSpeedX > 0 && ballSpeedY > 0 && Y2 < player1Y - PLAYERS_RADIUS/1.42){
+					ballSpeedY = - ballSpeedY;
+				}
+				
+				
+				else if(ballSpeedX < 0 && ballSpeedY < 0 && X1 > player1X + PLAYERS_RADIUS/1.42){
+					ballSpeedX = - ballSpeedX;
+				}
+				else if(ballSpeedX < 0 && ballSpeedY < 0 && Y1 > player1Y + PLAYERS_RADIUS/1.42){
+					ballSpeedY = - ballSpeedY;
+				}
+				else if(ballSpeedX == ballSpeedY || ballSpeedX == -ballSpeedY){
+					ballSpeedX = - ballSpeedX;
+					ballSpeedY = - ballSpeedY;
+				}
+			}
+			else if(ballSpeedX == ballSpeedY || ballSpeedX == -ballSpeedY){
+					ballSpeedX = - ballSpeedX;
+					ballSpeedY = - ballSpeedY;
+			}
+
+		}
+		if(ballSpeedX == 0 && ballSpeedY == 0){
+			ballSpeedX = player1SpeedX;
+			ballSpeedY = player1SpeedY;
+		}
+		if(player1SpeedX * ballSpeedX < 0 && player1SpeedY * ballSpeedY < 0){
+			ballSpeedX = -ballSpeedX + player1SpeedX;
+			ballSpeedY = -ballSpeedY + player1SpeedY;
+		}
+		else{
+			ballSpeedX = ballSpeedX + player1SpeedX;
+			ballSpeedY = ballSpeedY + player1SpeedY;
+		}
+		
+		isCollisionWithBall = false;
+		
+	}
+}
+
+function computerCollisionWithBall(){
+	var distance = Math.sqrt((player2X - ballX)*(player2X - ballX) + (player2Y - ballY)*(player2Y - ballY));
+	if(distance <= PLAYERS_RADIUS + BALL_RADIUS){
+		ballSpeedX = -ballSpeedX*1.05 ;
+		ballSpeedY = ballSpeedY *1.05;
+	}
+}
+
+function moveEverything(){
+	//playerCollisionWithBall();
+	//calculateSpeed(temp1X,temp1Y);
+	
+	computerMovement();
+	
+	computerCollisionWithBall();
+	
+	ballX += ballSpeedX;
+	ballY += ballSpeedY;
+	
+	if(ballY - BALL_RADIUS <= BOUND_THICKNESS+3){
+		ballSpeedY = -ballSpeedY;
+	}
+	if(ballY + BALL_RADIUS >= canvas.height - BOUND_THICKNESS-3){
+		ballSpeedY = -ballSpeedY;
+	}
+	
+	if(ballX-BALL_RADIUS <= BOUND_THICKNESS + 2 && ballY - BALL_RADIUS >= 250  && ballY + BALL_RADIUS <= 350){  // 250, 350 la toa do khung thanh`
+		resetBall();
+		player2Score++;
+	}
+	else if(ballX-BALL_RADIUS <= BOUND_THICKNESS+2 && ballY - BALL_RADIUS >= BOUND_THICKNESS + 2){
+		ballSpeedX = -ballSpeedX;
+	}
+	else if(ballX-BALL_RADIUS <= BOUND_THICKNESS+2 && ballY <= 250){
+		ballSpeedX = -ballSpeedX;
+	}
+	else if(ballX-BALL_RADIUS <= BOUND_THICKNESS+2 && ballY >= 350){
+		ballSpeedX = -ballSpeedX;
+	}
+	else if(ballX-BALL_RADIUS <= BOUND_THICKNESS+2 && ballY + BALL_RADIUS <= canvas.height - BOUND_THICKNESS - 2){
+		ballSpeedX = -ballSpeedX;
+	}
+	
+	if(ballX + BALL_RADIUS >= canvas.width - BOUND_THICKNESS - 2 && ballY >= 250 && ballY + BALL_RADIUS <= 350){
+		resetBall();
+		player1Score++;
+	}
+	else if(ballX + BALL_RADIUS >= canvas.width - BOUND_THICKNESS - 2 && ballY - BALL_RADIUS >= BOUND_THICKNESS + 2){
+		ballSpeedX = -ballSpeedX;
+	}
+	else if(ballX + BALL_RADIUS >= canvas.width - BOUND_THICKNESS - 2 && ballY <= 250){
+		ballSpeedX = -ballSpeedX;
+	}
+	else if(ballX + BALL_RADIUS >= canvas.width - BOUND_THICKNESS - 2 && ballY >= 350){
+		ballSpeedX = -ballSpeedX;
+	}
+	else if(ballX+BALL_RADIUS >= canvas.width - BOUND_THICKNESS - 2 && ballY + BALL_RADIUS <= canvas.height - BOUND_THICKNESS - 2){
+		ballSpeedX = -ballSpeedX;
+	}
+	if(ballY - BALL_RADIUS < BOUND_THICKNESS + 3 ){
+		ballY = BOUND_THICKNESS + 3 + BALL_RADIUS;
+	}
+	if(ballY + BALL_RADIUS > canvas.width - BOUND_THICKNESS - 3 ){
+		ballY = canvas.width - BOUND_THICKNESS - 3;
+	}
+	isCollisionWithBall = false;
+}
+
+function resetBall(){
+	ballSpeedX = 0;
+	ballSpeedY = 0;
+	ballX = 300;
+	ballY = 300;
+}
+
+function computerMovement(){
+	if(player2Y < ballY - 15){
+		player2Y += 4;
+	}
+	else if(player2Y > ballY + 15){
+		player2Y -= 4;
+	}
+	if(player2Y - PLAYERS_RADIUS <= BOUND_THICKNESS+2 ){
+		player2Y = BOUND_THICKNESS + 2 + PLAYERS_RADIUS;
+	}
+	else if(player2Y + PLAYERS_RADIUS >= canvas.height - BOUND_THICKNESS - 2){
+		player2Y = canvas.height - BOUND_THICKNESS - 2 - PLAYERS_RADIUS;
+	}
+}
+
+function drawEverything(){
+	drawBound();
+	drawBackground();
+	
+	
+	colorCircle(player1X,player1Y,PLAYERS_RADIUS,'red');
+	colorCircle(player2X,player2Y,PLAYERS_RADIUS,'blue');
+	colorCircle(ballX,ballY,BALL_RADIUS,'white');
+	
+	canvasContext.fillText(player1Score,300,100);
+	canvasContext.fillText(player2Score,500,100);
+}
+
+function drawBound(){
+	colorRect(0,0,canvas.width,canvas.height,'black');
+	
+	colorRect(2,2,BOUND_THICKNESS,(canvas.height - 100 - 4)/2,'white');
+	colorRect(2,canvas.height/2+(PLAYERS_RADIUS+20),BOUND_THICKNESS,(canvas.height - 100 - 4)/2,'white');
+	
+	colorRect(2,2,canvas.width-4,BOUND_THICKNESS,'white');
+	colorRect(2,canvas.height-BOUND_THICKNESS-2,canvas.width-4,BOUND_THICKNESS,'white');
+	
+	colorRect(canvas.width-2-BOUND_THICKNESS,2,BOUND_THICKNESS,(canvas.height - 100 - 4)/2,'white');
+	colorRect(canvas.width-2-BOUND_THICKNESS,canvas.height/2+(PLAYERS_RADIUS+20),BOUND_THICKNESS,(canvas.height - 100 - 4)/2,'white');
+}
+
+function drawBackground(){
+	colorCircle(canvas.width/2,canvas.height/2,100,'white');
+	colorCircle(canvas.width/2,canvas.height/2,98,'black');
+	colorRect(canvas.width/2 - 1, BOUND_THICKNESS + 2, 2, canvas.height-2*BOUND_THICKNESS-4,'white');
+}
+
+function colorRect(leftX, topY, width, height, drawColor){
+	canvasContext.fillStyle = drawColor;
+	canvasContext.fillRect(leftX, topY, width, height);
+}
+
+function colorCircle(centerX, centerY, radius, drawColor){
+	canvasContext.fillStyle = drawColor;
+	canvasContext.beginPath();
+	canvasContext.arc(centerX, centerY, radius, 0, Math.PI*2,true);
+	//canvasContext.arc(ballX, 100, 10, Math.PI, Math.PI*2,true);
+	canvasContext.fill();
+}
+
+
+</script>
+</html>
